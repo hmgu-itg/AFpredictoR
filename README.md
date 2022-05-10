@@ -40,5 +40,5 @@ The `.frqx.gz` file created using Plink's `--freqx gz` command (See [link](https
 The output prefix. `<prefix>.csv` and `<prefix>.debug.csv` file will be generated.
 
 ## Output
-### `<prefix>.csv`
+### `<prefix>.tsv`
 Same format as the input summary statistics file, except that the `AF` column now refers to the frequency for `A1`

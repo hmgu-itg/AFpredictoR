@@ -39,8 +39,10 @@ main = function(sumstats.file,
                 threshold.pdiff=0.05,
                 threshold.pmax=1e-10,
                 debug=FALSE) {
-    output.file = paste0(output, '.csv')
-    output.debug.file = paste0(output, '.debug.csv')
+    cat('Running AFpredictoR on', as.character(Sys.time()), '\n')
+    cat('Reading & processing input files\n')
+    output.file = paste0(output, '.tsv')
+    output.debug.file = paste0(output, '.debug.tsv')
 
     sumstats = read.sumstats(sumstats.file)
     bim = read.bim(bim.file)
@@ -63,6 +65,7 @@ main = function(sumstats.file,
     m = m[!duplicated(m)] # There were some sumstats with duplicate rows.
     m[,var_id:=NULL]
 
+    cat('Running proportions test\n')
     # Run proportions test and add test statistics to the table
     binomp=apply(m[,.(ac, frqx_ac, an, frqx_an)], 1, function(x){
         te=prop.test(x=x[1:2], n=x[3:4])
@@ -83,14 +86,21 @@ main = function(sumstats.file,
     addendum[,pdiff:=pvg(chidiff, vgC=0, theta=0, nu=2, sigma=2)]
 
     m_addendum=cbind(m, addendum)
-
-    if (debug==TRUE) fwrite(m_addendum, output.debug.file)
-
+    
+    if (debug==TRUE) {
+        cat('Debug mode enabled. Creating', output.debug.file, '\n')
+        fwrite(m_addendum, output.debug.file, sep = '\t')
+    }
+    cat('Filtering variants according to thresholds\n')
+    cat(paste0('pdiff<', threshold.pdiff, '\n'))
+    cat(paste0('pmax>', threshold.pmax, '\n'))
     m_addendum2 = m_addendum[pdiff<threshold.pdiff 
                             & pmax>threshold.pmax,
                             .(SNP, chrom, pos, A1, A2, AF, N, AF_is_for_frqx_A1, frqx_A1, frqx_A2, pdiff, pmax)]
-
-
+    filtered.rows = nrow(m_addendum) - nrow(m_addendum2)
+    cat(filtered.rows, 'variants filtered out\n')
+    
+    cat('Assigning AF to A1\n')
     # Case 1 and 7
     m_addendum2[AF_is_for_frqx_A1==TRUE
                 & A1==frqx_A2
@@ -101,8 +111,9 @@ main = function(sumstats.file,
                 & A2==frqx_A2, AF:=1-AF]
 
     out = m_addendum2[,.(SNP, chrom, pos, A1, A2, AF, N)]
-
-    fwrite(out, output.file)
+    cat('Generating', output.file, '\n')
+    fwrite(out, output.file, sep = '\t')
+    cat('Done\n')
 }
 
 
