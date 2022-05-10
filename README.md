@@ -2,6 +2,8 @@
 Sometimes sumstats report allele frequency (AF) information but is not clear which allele the AF belongs to. 
 `AFpredictoR` predicts which allele the AF belongs to and outputs a new summary statistics file. 
 
+The name can be a bit misleading as it predicts and assigns the AF to the appropriate allele rather than predicting the AF value itself.  
+Please recommend a new name if you have one :).
 
 ## Required packages
 - `data.table`
